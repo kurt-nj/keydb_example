@@ -1,0 +1,122 @@
+version: '3.2'
+
+services:
+  # MASTERS
+  # keydb1:
+  #   image: eqalpha/keydb
+  #   ports:
+  #       - "6401:6379"
+  #   volumes:
+  #       - ./:/keydb
+  #   command:
+  #       - /keydb/config/keydb1.conf
+
+  # keydb2:
+  #   image: eqalpha/keydb
+  #   ports:
+  #     - "6402:6379"
+  #   volumes:
+  #     - ./:/keydb
+  #   command:
+  #     - /keydb/config/keydb2.conf
+
+  # keydb3:
+  #   image: eqalpha/keydb
+  #   ports:
+  #     - "6403:6379"
+  #   volumes:
+  #     - ./:/keydb
+  #   command:
+  #     - /keydb/config/keydb3.conf
+
+  # keydb4:
+  #   image: eqalpha/keydb
+  #   ports:
+  #     - "6404:6379"
+  #   volumes:
+  #     - ./:/keydb
+  #   command:
+  #     - /keydb/config/keydb4.conf
+
+  # HA 
+  proxy:
+    build: ./haproxy
+    depends_on:
+      - primary1
+      - primary2
+    ports:
+      - "6379:6379"
+    environment:
+      - PRIMARY_1_IP=${PRIMARY_1_IP}
+      - PRIMARY_2_IP=${PRIMARY_2_IP}
+    networks:
+      public_net:
+        ipv4_address: ${HA_PROXY_IP}
+
+  primary1:
+    image: eqalpha/keydb
+    ports:
+      - "6401:6379"
+    volumes:
+      - ./:/keydb
+    command:
+      - /keydb/config/primary1.conf
+    networks:
+      public_net:
+        ipv4_address: ${PRIMARY_1_IP}
+
+  primary2:
+    image: eqalpha/keydb
+    ports:
+      - "6402:6379"
+    volumes:
+      - ./:/keydb
+    command:
+      - /keydb/config/primary2.conf
+    networks:
+      public_net:
+        ipv4_address: ${PRIMARY_2_IP}
+
+  replica1:
+    image: eqalpha/keydb
+    ports:
+      - "6501:6379"
+    volumes:
+      - ./:/keydb
+    command:
+      - /keydb/config/replica.conf
+    networks:
+      public_net:
+        ipv4_address: ${REPLICA_1_IP}
+
+  replica2:
+    image: eqalpha/keydb
+    ports:
+      - "6502:6379"
+    volumes:
+      - ./:/keydb
+    command:
+      - /keydb/config/replica.conf
+    networks:
+      public_net:
+        ipv4_address: ${REPLICA_2_IP}
+
+  replica3:
+    image: eqalpha/keydb
+    ports:
+      - "6503:6379"
+    volumes:
+      - ./:/keydb
+    command:
+      - /keydb/config/replica.conf
+    networks:
+      public_net:
+        ipv4_address: ${REPLICA_3_IP}
+
+networks:
+  public_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${NETWORK_SUBNET}

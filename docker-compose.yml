@@ -2,7 +2,6 @@ version: '3.2'
 
 services:
 
-
   # Load balancing proxy
   # This is what the replicas will talk through
   proxy:
